@@ -1,12 +1,76 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Flai - Dashboard Aziendale</title>
+  <style>
+    body{font-family:system-ui,Arial,sans-serif;background:#0b0b0c;color:#eee;margin:0}
+    .wrap{max-width:900px;margin:0 auto;padding:40px}
+    .card{background:#141416;border:1px solid #2a2a2e;border-radius:14px;padding:20px;margin-top:16px}
+    button{background:#fff;color:#000;border:none;border-radius:8px;padding:10px 14px;cursor:pointer}
+    input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #2a2a2e;background:#0f0f11;color:#eee}
+    label{font-size:14px;color:#bbb}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .mt{margin-top:12px}
+    pre{white-space:pre-wrap;background:#0f0f11;border:1px solid #2a2a2e;border-radius:8px;padding:12px}
+  </style>
 </head>
 <body>
-  <h1>Benvenuto su Flai</h1>
-  <p>Questa è la prima versione del tuo sito 🚀</p>
+  <div class="wrap">
+    <h1>Benvenuto su Flai</h1>
+    <p>Sito di prova. Qui testiamo il collegamento col backend su Render.</p>
+
+    <div class="card">
+      <h2>1) Ping backend</h2>
+      <div class="row">
+        <button onclick="ping()">Test /healthz</button>
+        <span id="ping-out" style="color:#9ae6b4"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2) Invia un messaggio al webhook</h2>
+      <label for="msg">Messaggio</label>
+      <textarea id="msg" rows="3" placeholder="Es: Oggi ho venduto 15 panini e incassato 120 CHF."></textarea>
+      <div class="mt row">
+        <button onclick="send()">Invia</button>
+        <span id="send-out" style="color:#9ae6b4"></span>
+      </div>
+      <div class="mt">
+        <label>Risposta</label>
+        <pre id="reply"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BASE = "https://flai-app.onrender.com"; // tuo backend su Render
+
+    async function ping(){
+      try{
+        const t = await fetch(`${BASE}/healthz`).then(r=>r.text());
+        document.getElementById('ping-out').textContent = "Backend: " + t;
+      }catch(e){ document.getElementById('ping-out').textContent = "Errore: " + e; }
+    }
+
+    async function send(){
+      const msg = document.getElementById('msg').value.trim();
+
+      document.getElementById('send-out').textContent = "Invio...";
+      try{
+        const res = await fetch(`${BASE}/webhook`, {
+          method:"POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ message: msg || "Messaggio di test dal sito" })
+        });
+        const data = await res.json();
+        document.getElementById('reply').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('send-out').textContent = "Fatto ✔";
+      }catch(e){
+        document.getElementById('send-out').textContent = "Errore: " + e;
+      }
+    }
+  </script>
 </body>
 </html>
